@@ -23,7 +23,7 @@ const mongooseIntegration = (
       "astro:server:start": async () => {
         try {
           await mongoose.connect(uri, options);
-          console.info("MongoDB Connected");
+          console.info(`MongoDB Connected @ ${uri}`);
         } catch (error) {
           console.error(`MongoDB connection error: ${error}`);
           process.exit(1);
