@@ -11,6 +11,8 @@ const mongooseIntegration = (
   uri: string,
   options?: mongoose.ConnectOptions
 ): AstroIntegration => {
+  let isConnectionStarted = false;
+
   if (!uri) {
     throw new Error(
       "MongoDB URI is required. Set it in the options or as an environment variable MONGODB_URI."
@@ -21,17 +23,23 @@ const mongooseIntegration = (
     name: "astro-plugin-mongoose",
     hooks: {
       "astro:server:start": async () => {
+        if (isConnectionStarted) {
+          return console.info(`MongoDB Connected @ ${uri}`);
+        }
         try {
           await mongoose.connect(uri, options);
-          console.info(`MongoDB Connected @ ${uri}`);
+          console.info(`MongoDB Connect @ ${uri}`);
+          isConnectionStarted = true;
         } catch (error) {
           console.error(`MongoDB connection error: ${error}`);
           process.exit(1);
         }
-
-        process.on("SIGINT", closeConnection);
       },
       "astro:server:stop": async () => {
+        if (!isConnectionStarted) {
+          return;
+        }
+
         try {
           await mongoose.connection.close();
           console.debug("MongoDB Connection closed gracefully");
